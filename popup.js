@@ -1,9 +1,28 @@
-const toggle = document.getElementById('toggle');
+document.addEventListener('DOMContentLoaded', async () => {
+  const toggle = document.getElementById('toggle');
+  const maxTabsInput = document.getElementById('maxTabs');
+  const setButton = document.getElementById('setMaxTabs');
 
-chrome.storage.local.get(['enabled'], (result) => {
-  toggle.checked = result.enabled ?? true; // Default: on
-});
+  // Load stored values
+  const { enabled, maxTabs } = await chrome.storage.local.get(['enabled', 'maxTabs']);
+  toggle.checked = !!enabled;
+  maxTabsInput.value = maxTabs || 5;
 
-toggle.addEventListener('change', () => {
-  chrome.storage.local.set({ enabled: toggle.checked });
+  // Save toggle state
+  toggle.addEventListener('change', () => {
+    chrome.storage.local.set({ enabled: toggle.checked });
+  });
+
+  // Save maxTabs on button click or Enter
+  function saveMaxTabs() {
+    const value = parseInt(maxTabsInput.value.trim(), 10);
+    if (!isNaN(value) && value > 0) {
+      chrome.storage.local.set({ maxTabs: value });
+    }
+  }
+
+  setButton.addEventListener('click', saveMaxTabs);
+  maxTabsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveMaxTabs();
+  });
 });

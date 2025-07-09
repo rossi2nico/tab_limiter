@@ -1,17 +1,19 @@
-const MAX_TABS = 5;
-
 chrome.tabs.onCreated.addListener(async (tab) => {
-  const { enabled } = await chrome.storage.local.get(['enabled']);
+  const { enabled, maxTabs } = await chrome.storage.local.get(['enabled', 'maxTabs']);
   if (!enabled) return;
 
   const tabs = await chrome.tabs.query({});
-  if (tabs.length > MAX_TABS) {
+  const limit = parseInt(maxTabs, 10) || 5;
+
+  if (tabs.length > limit) {
     chrome.tabs.remove(tab.id);
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icon.png',
       title: 'Tab Limit Reached',
-      message: `Only ${MAX_TABS} tabs allowed.`,
+      message: `Only ${limit} tabs allowed.`,
     });
   }
 });
+
+ 
